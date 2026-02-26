@@ -18,6 +18,7 @@ import net.minecraft.world.phys.Vec3;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 import org.valkyrienskies.create_interactive.fabric.mixin_logic.MixinContraptionHandlerClientLogic;
 
@@ -54,6 +55,19 @@ public class MixinContraptionHandlerClient {
         if (interactionResult.equals(InteractionResult.FAIL) && !success.get()) {
             return InteractionResult.PASS;
         } else return interactionResult;
+    }
+
+    /**
+     * Cancel further interaction handling when the contraption already handled the interaction (ex: train controller)
+     */
+    @Inject(
+            method = "rightClickingOnContraptionsGetsHandledLocally",
+            at = @At(value = "INVOKE", target = "Lme/pepperbell/simplenetworking/SimpleChannel;sendToServer(Lme/pepperbell/simplenetworking/C2SPacket;)V", shift = At.Shift.AFTER),
+            remap = false,
+            cancellable = true
+    )
+    private static void cancelFurtherInteraction(Minecraft mc, HitResult result, InteractionHand hand, CallbackInfoReturnable<InteractionResult> cir) {
+        cir.setReturnValue(InteractionResult.SUCCESS);
     }
 
     /**

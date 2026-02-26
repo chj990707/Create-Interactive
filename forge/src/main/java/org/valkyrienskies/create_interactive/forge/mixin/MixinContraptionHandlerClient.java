@@ -59,6 +59,20 @@ public class MixinContraptionHandlerClient {
     }
 
     /**
+     * Cancel further interaction handling when the contraption already handled the interaction (ex: train controller)
+     */
+    @Inject(
+            method = "rightClickingOnContraptionsGetsHandledLocally",
+            at = @At(value = "INVOKE", target = "Lnet/minecraftforge/network/simple/SimpleChannel;sendToServer(Ljava/lang/Object;)V", shift = At.Shift.AFTER),
+            remap = false,
+            cancellable = true
+    )
+    private static void cancelFurtherInteraction(InputEvent.InteractionKeyMappingTriggered event, CallbackInfo ci) {
+        event.setCanceled(true);
+        ci.cancel();
+    }
+
+    /**
      * Cancel handling train interactions if the hit result was a block, we'll handle them later
      */
     @Inject(method = "handleSpecialInteractions", at = @At("HEAD"), cancellable = true, remap = false)
